@@ -712,9 +712,9 @@ const CompoundInterestCalculator: React.FC = () => {
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Onde foi historicamente possível ~10%/ano?</h2>
         </div>
         <ul className="space-y-3 text-gray-700 dark:text-gray-300 list-disc pl-6">
-          <li><span className="font-medium">Índices de ações amplos</span> (ex.: S&P 500) ao longo de várias décadas apresentaram ~10%/ano nominal.</li>
-          <li><span className="font-medium">Carteiras globais diversificadas</span> (ex.: MSCI World) com horizonte de longo prazo.</li>
-          <li><span className="font-medium">REITs/Imobiliário cotado</span> em períodos extensos, dependendo do ciclo económico.</li>
+          <li><span className="font-medium">Índices de ações amplos</span> (ex.: S&P 500) ao longo de várias décadas apresentaram ~10%/ano nominal — <a className="underline text-blue-600 dark:text-blue-400" href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html" target="_blank" rel="noopener noreferrer">fonte</a>.</li>
+          <li><span className="font-medium">Carteiras globais diversificadas</span> (ex.: MSCI World) com horizonte de longo prazo — <a className="underline text-blue-600 dark:text-blue-400" href="https://www.msci.com/our-solutions/indexes/msci-world-index" target="_blank" rel="noopener noreferrer">fonte</a>.</li>
+          <li><span className="font-medium">REITs/Imobiliário cotado</span> em períodos extensos, dependendo do ciclo económico — <a className="underline text-blue-600 dark:text-blue-400" href="https://www.reit.com/data-research/data/returns" target="_blank" rel="noopener noreferrer">fonte</a>.</li>
         </ul>
         <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">Aviso: Rendibilidades passadas não garantem resultados futuros. Considere custos, impostos e risco.</p>
         <div className="mt-8 flex justify-center">
