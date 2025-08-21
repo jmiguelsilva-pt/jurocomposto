@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-// Emojis em vez de ícones (mantemos só sol/lua como ícones)
-import { Moon, Sun } from 'lucide-react';
+import { Calculator, Moon, Sun, TrendingUp } from 'lucide-react';
 import CompoundInterestCalculator from './components/CompoundInterestCalculator';
 
 function App() {
@@ -40,7 +39,9 @@ function App() {
       <header className="bg-white/80 dark:bg-gray-800/70 backdrop-blur-xl border-b border-gray-200/70 dark:border-gray-700/60 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-500 rounded-xl">🧮</div>
+            <div className="p-2 bg-blue-500 rounded-xl">
+              <Calculator className="w-6 h-6 text-white" />
+            </div>
             <div>
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Calculadora de Juros Compostos
@@ -72,7 +73,7 @@ function App() {
       <footer className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 mt-16">
         <div className="max-w-4xl mx-auto px-6 py-6 text-center">
           <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400">
-            <span>📈</span>
+            <TrendingUp className="w-4 h-4" />
             <span className="text-sm">Planeie o seu futuro financeiro com inteligência</span>
           </div>
         </div>

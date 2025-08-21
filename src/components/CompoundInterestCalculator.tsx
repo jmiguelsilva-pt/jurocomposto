@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer } from 'recharts';
-// Emojis em vez de ícones
+import { PiggyBank, TrendingUp, Calculator, BarChart3, BookOpen, GitCompare, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
+// 2D icons: no Icon3D wrapper
 import Tooltip from './ui/Tooltip';
 import Reveal from './ui/Reveal';
+import BuyMeACoffee from './BuyMeACoffee';
 
 interface CalculatorData {
   principal: number;
@@ -31,10 +33,17 @@ interface ChartDataPoint {
   interest3: number;
 }
 
-//
+interface LineVisibility {
+  principal1: boolean;
+  interest1: boolean;
+  principal2: boolean;
+  interest2: boolean;
+  principal3: boolean;
+  interest3: boolean;
+}
 
 const CompoundInterestCalculator: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'scenario1' | 'scenario2'>('scenario1');
+  const [activeTab, setActiveTab] = useState<'scenario1' | 'scenario2' | 'scenario3'>('scenario1');
   const [isIntroCollapsed, setIsIntroCollapsed] = useState(false);
   
   const [scenario1Data, setScenario1Data] = useState<CalculatorData>({
@@ -53,6 +62,14 @@ const CompoundInterestCalculator: React.FC = () => {
     monthlyContribution: 300
   });
 
+  const [scenario3Data, setScenario3Data] = useState<CalculatorData>({
+    principal: 5000,
+    rate: 8,
+    time: 10,
+    frequency: 12,
+    monthlyContribution: 700
+  });
+
   const [scenario1Results, setScenario1Results] = useState<Results>({
     finalAmount: 0,
     totalInterest: 0,
@@ -65,10 +82,26 @@ const CompoundInterestCalculator: React.FC = () => {
     totalContributions: 0
   });
 
+  const [scenario3Results, setScenario3Results] = useState<Results>({
+    finalAmount: 0,
+    totalInterest: 0,
+    totalContributions: 0
+  });
+
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   
+  const [lineVisibility, setLineVisibility] = useState<LineVisibility>({
+    principal1: true,
+    interest1: true,
+    principal2: true,
+    interest2: true,
+    principal3: true,
+    interest3: true,
+  });
+
   const [showRes1, setShowRes1] = useState(true);
   const [showRes2, setShowRes2] = useState(true);
+  const [showRes3, setShowRes3] = useState(true);
 
   const calculateScenario = (data: CalculatorData) => {
     const { principal, rate, time, frequency, monthlyContribution } = data;
@@ -76,24 +109,28 @@ const CompoundInterestCalculator: React.FC = () => {
     
     let amount = principal;
     let totalContributions = principal;
-    const yearlyData: Array<{year:number; amount:number; principal:number; interest:number}> = [];
-
-    const periodsPerYear = frequency; // 1=anual, 4=trimestral, 12=mensal, 365=diário
-    const contributionPerPeriod = monthlyContribution * (12 / periodsPerYear);
+    const yearlyData = [];
     
     for (let year = 0; year <= time; year++) {
       if (year === 0) {
-        yearlyData.push({ year, amount: principal, principal: totalContributions, interest: 0 });
+        yearlyData.push({
+          year,
+          amount: principal,
+          principal: totalContributions,
+          interest: 0
+        });
       } else {
-        for (let p = 1; p <= periodsPerYear; p++) {
-          amount = amount * (1 + r / periodsPerYear) + contributionPerPeriod;
-          totalContributions += contributionPerPeriod;
+        // Calculate compound interest with monthly contributions
+        for (let month = 1; month <= 12; month++) {
+          amount = amount * (1 + r / frequency) + monthlyContribution;
         }
+        totalContributions += monthlyContribution * 12;
+        
         yearlyData.push({
           year,
           amount: Math.round(amount),
-          principal: Math.round(totalContributions),
-          interest: Math.round(amount - totalContributions),
+          principal: totalContributions,
+          interest: Math.round(amount - totalContributions)
         });
       }
     }
@@ -102,25 +139,32 @@ const CompoundInterestCalculator: React.FC = () => {
     const totalInterest = Math.round(amount - totalContributions);
 
     return {
-      results: { finalAmount, totalInterest, totalContributions: Math.round(totalContributions) },
-      yearlyData,
+      results: {
+        finalAmount,
+        totalInterest,
+        totalContributions
+      },
+      yearlyData
     };
   };
 
   const calculateAllScenarios = () => {
     const scenario1 = calculateScenario(scenario1Data);
     const scenario2 = calculateScenario(scenario2Data);
+    const scenario3 = calculateScenario(scenario3Data);
 
     setScenario1Results(scenario1.results);
     setScenario2Results(scenario2.results);
+    setScenario3Results(scenario3.results);
 
     // Combine data for chart
     const combinedData: ChartDataPoint[] = [];
-    const maxTime = Math.max(scenario1Data.time, scenario2Data.time);
+    const maxTime = Math.max(scenario1Data.time, scenario2Data.time, scenario3Data.time);
 
     for (let year = 0; year <= maxTime; year++) {
       const data1 = scenario1.yearlyData.find(d => d.year === year);
       const data2 = scenario2.yearlyData.find(d => d.year === year);
+      const data3 = scenario3.yearlyData.find(d => d.year === year);
 
       combinedData.push({
         year,
@@ -130,9 +174,9 @@ const CompoundInterestCalculator: React.FC = () => {
         amount2: data2?.amount || 0,
         principal2: data2?.principal || 0,
         interest2: data2?.interest || 0,
-        amount3: 0,
-        principal3: 0,
-        interest3: 0,
+        amount3: data3?.amount || 0,
+        principal3: data3?.principal || 0,
+        interest3: data3?.interest || 0,
       });
     }
 
@@ -141,23 +185,33 @@ const CompoundInterestCalculator: React.FC = () => {
 
   useEffect(() => {
     calculateAllScenarios();
-  }, [scenario1Data, scenario2Data]);
+  }, [scenario1Data, scenario2Data, scenario3Data]);
 
-  const handleInputChange = (scenario: 'scenario1' | 'scenario2', field: keyof CalculatorData, value: number) => {
+  const handleInputChange = (scenario: 'scenario1' | 'scenario2' | 'scenario3', field: keyof CalculatorData, value: number) => {
     if (scenario === 'scenario1') {
       setScenario1Data(prev => ({
         ...prev,
         [field]: value
       }));
-    } else {
+    } else if (scenario === 'scenario2') {
       setScenario2Data(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    } else {
+      setScenario3Data(prev => ({
         ...prev,
         [field]: value
       }));
     }
   };
 
-  //
+  const toggleLineVisibility = (line: keyof LineVisibility) => {
+    setLineVisibility(prev => ({
+      ...prev,
+      [line]: !prev[line]
+    }));
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('pt-PT', {
@@ -211,6 +265,24 @@ const CompoundInterestCalculator: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            <div>
+              <p className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">Cenário 3</p>
+              <div className="space-y-1 text-xs">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-gray-600 dark:text-gray-400">Total:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(data.amount3)}</span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-gray-600 dark:text-gray-400">Contribuições:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(data.principal3)}</span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-gray-600 dark:text-gray-400">Juros:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(data.interest3)}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       );
@@ -218,210 +290,524 @@ const CompoundInterestCalculator: React.FC = () => {
     return null;
   };
 
-  const renderCalculatorForm = (scenario: 'scenario1' | 'scenario2', data: CalculatorData, title: string) => (
+  const renderCalculatorForm = (scenario: 'scenario1' | 'scenario2' | 'scenario3', data: CalculatorData, title: string) => (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-blue-500 rounded-xl">🧮</div>
+        <div className="p-2 bg-blue-500 rounded-xl">
+          <Calculator className="w-6 h-6 text-white" />
+        </div>
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
           {title}
         </h3>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Investimento Inicial */}
+        {/* Principal Amount */}
         <div>
           <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
             <div className="inline-flex items-center gap-2">
-              <span>Investimento Inicial</span>
+              <span>Capital Inicial</span>
               <Tooltip content="Montante inicial que investe. Pode ser 0€.">
                 <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-800 text-[10px]">i</span>
               </Tooltip>
             </div>
           </label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">€</span>
-            <input type="number" value={data.principal} onChange={(e) => handleInputChange(scenario, 'principal', Number(e.target.value))} className="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-black/0 text-gray-900 dark:text-white transition-all duration-200 shadow-sm" placeholder="10.000" />
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
+              €
+            </span>
+            <input
+              type="number"
+              value={data.principal}
+              onChange={(e) => handleInputChange(scenario, 'principal', Number(e.target.value))}
+              className="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-black/0 text-gray-900 dark:text-white transition-all duration-200 shadow-sm"
+              placeholder="10.000"
+            />
           </div>
         </div>
 
-        {/* Período (Anos) */}
+        {/* Interest Rate */}
+        <div>
+          <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
+            <div className="inline-flex items-center gap-2">
+              <span>Taxa de Juro Anual</span>
+              <Tooltip content="Taxa média anual esperada (ex.: 7 para 7%).">
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-800 text-[10px]">i</span>
+              </Tooltip>
+            </div>
+          </label>
+          <div className="relative">
+            <input
+              type="number"
+              step="0.1"
+              value={data.rate}
+              onChange={(e) => handleInputChange(scenario, 'rate', Number(e.target.value))}
+              className="w-full pr-8 pl-4 py-3 bg-white dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-black/0 text-gray-900 dark:text-white transition-all duration-200 shadow-sm"
+              placeholder="5.0"
+            />
+            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-700 dark:text-gray-400">
+              %
+            </span>
+          </div>
+        </div>
+
+        {/* Time Period */}
         <div>
           <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
             <div className="inline-flex items-center gap-2">
               <span>Período (Anos)</span>
-              <Tooltip content="Número de anos do investimento."><span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-800 text-[10px]">i</span></Tooltip>
+              <Tooltip content="Número de anos do investimento.">
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-800 text-[10px]">i</span>
+              </Tooltip>
             </div>
           </label>
-          <input type="number" value={data.time} onChange={(e) => handleInputChange(scenario, 'time', Number(e.target.value))} className="w-full px-4 py-3 bg-white dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-black/0 text-gray-900 dark:text-white transition-all duration-200 shadow-sm" placeholder="10" />
+          <input
+            type="number"
+            value={data.time}
+            onChange={(e) => handleInputChange(scenario, 'time', Number(e.target.value))}
+            className="w-full px-4 py-3 bg-white dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-black/0 text-gray-900 dark:text-white transition-all duration-200 shadow-sm"
+            placeholder="10"
+          />
         </div>
 
-        {/* Investimento Adicional (Mensal base) */}
+        {/* Monthly Contribution */}
         <div>
           <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
             <div className="inline-flex items-center gap-2">
-              <span>Investimento Adicional</span>
-              <Tooltip content="Valor base mensal. Ajustado pela frequência."><span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-800 text-[10px]">i</span></Tooltip>
+              <span>Contribuição Mensal</span>
+              <Tooltip content="Valor que adiciona todos os meses.">
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-800 text-[10px]">i</span>
+              </Tooltip>
             </div>
           </label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">€</span>
-            <input type="number" value={data.monthlyContribution} onChange={(e) => handleInputChange(scenario, 'monthlyContribution', Number(e.target.value))} className="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-black/0 text-gray-900 dark:text-white transition-all duration-200 shadow-sm" placeholder="500" />
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
+              €
+            </span>
+            <input
+              type="number"
+              value={data.monthlyContribution}
+              onChange={(e) => handleInputChange(scenario, 'monthlyContribution', Number(e.target.value))}
+              className="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-black/0 text-gray-900 dark:text-white transition-all duration-200 shadow-sm"
+              placeholder="500"
+            />
           </div>
         </div>
 
-        {/* Frequência do Investimento */}
-        <div>
+        {/* Compound Frequency */}
+        <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
             <div className="inline-flex items-center gap-2">
-              <span>Frequência do Investimento</span>
-              <Tooltip content="Periodicidade de aplicação dos juros e contribuições."><span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-800 text-[10px]">i</span></Tooltip>
+              <span>Frequência de Capitalização</span>
+              <Tooltip content="Frequência com que os juros são aplicados.">
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-800 text-[10px]">i</span>
+              </Tooltip>
             </div>
           </label>
-          <select value={data.frequency} onChange={(e) => handleInputChange(scenario, 'frequency', Number(e.target.value))} className="w-full px-4 py-3 bg-white dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-black/0 text-gray-900 dark:text-white transition-all duration-200 shadow-sm">
+          <select
+            value={data.frequency}
+            onChange={(e) => handleInputChange(scenario, 'frequency', Number(e.target.value))}
+            className="w-full px-4 py-3 bg-white dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-black/0 text-gray-900 dark:text-white transition-all duration-200 shadow-sm"
+          >
             <option value={1}>Anualmente</option>
             <option value={4}>Trimestralmente</option>
             <option value={12}>Mensalmente</option>
             <option value={365}>Diariamente</option>
           </select>
         </div>
+      </div>
+    </div>
+  );
 
-        {/* Taxa de Juro */}
-        <div>
-          <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
-            <div className="inline-flex items-center gap-2">
-              <span>Taxa de Juro</span>
-              <Tooltip content="Taxa média anual esperada (ex.: 7 para 7%)."><span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-800 text-[10px]">i</span></Tooltip>
+  const renderResults = (results: Results, title: string, colorClass: string) => (
+    <div className="space-y-4">
+      <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h4>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className={`bg-gradient-to-br ${colorClass} rounded-2xl p-6 border border-opacity-50`}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-blue-500 rounded-lg">
+              <PiggyBank className="w-5 h-5 text-white" />
             </div>
-          </label>
-          <div className="relative">
-            <input type="number" step="0.1" value={data.rate} onChange={(e) => handleInputChange(scenario, 'rate', Number(e.target.value))} className="w-full pr-8 pl-4 py-3 bg-white dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-black/0 text-gray-900 dark:text-white transition-all duration-200 shadow-sm" placeholder="7" />
+            <h5 className="text-sm font-semibold text-gray-900 dark:text-white">
+              Montante Final
+            </h5>
           </div>
+          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            {formatCurrency(results.finalAmount)}
+          </p>
+        </div>
+
+        <div className={`bg-gradient-to-br ${colorClass} rounded-2xl p-6 border border-opacity-50`}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-green-500 rounded-lg">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
+            <h5 className="text-sm font-semibold text-gray-900 dark:text-white">
+              Juros Ganhos
+            </h5>
+          </div>
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+            {formatCurrency(results.totalInterest)}
+          </p>
+        </div>
+
+        <div className={`bg-gradient-to-br ${colorClass} rounded-2xl p-6 border border-opacity-50`}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-purple-500 rounded-lg">
+              <Calculator className="w-5 h-5 text-white" />
+            </div>
+            <h5 className="text-sm font-semibold text-gray-900 dark:text-white">
+              Total Investido
+            </h5>
+          </div>
+          <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+            {formatCurrency(results.totalContributions)}
+          </p>
         </div>
       </div>
     </div>
   );
 
+  const lineColors = {
+    principal1: '#1E40AF', // Blue 800
+    interest1: '#3B82F6',  // Blue 500
+    principal2: '#047857', // Emerald 800
+    interest2: '#10B981',  // Emerald 500
+    principal3: '#7C2D12', // Orange 800
+    interest3: '#EA580C',  // Orange 500
+  };
+
+  const lineLabels = {
+    principal1: 'Cenário 1 - Contribuições',
+    interest1: 'Cenário 1 - Juros',
+    principal2: 'Cenário 2 - Contribuições',
+    interest2: 'Cenário 2 - Juros',
+    principal3: 'Cenário 3 - Contribuições',
+    interest3: 'Cenário 3 - Juros',
+  };
+
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Calculadora de Juros Compostos
-        </h2>
-        <div className="flex items-center gap-2">
+    <div className="space-y-8">
+      {/* Introduction */}
+      <Reveal>
+      <div className="card-surface p-8">
+        <button
+          onClick={() => setIsIntroCollapsed(!isIntroCollapsed)}
+          className="flex items-center justify-between w-full text-left group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-500 rounded-xl"><BookOpen className="w-6 h-6 text-white" /></div>
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+              O que são Juros Compostos?
+            </h2>
+          </div>
+          <div className="p-2 rounded-lg bg-gray-100/60 dark:bg-gray-700/60 group-hover:bg-gray-200/80 dark:group-hover:bg-gray-600/80 transition-colors duration-200">
+            {isIntroCollapsed ? (
+              <ChevronDown className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            ) : (
+              <ChevronUp className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            )}
+          </div>
+        </button>
+        
+        {!isIntroCollapsed && (
+          <div className="mt-6 prose prose-gray dark:prose-invert max-w-none">
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              Os juros compostos são frequentemente chamados de "oitava maravilha do mundo" porque permitem que o seu dinheiro cresça exponencialmente ao longo do tempo. 
+              Ao contrário dos juros simples, onde apenas o capital inicial rende juros, nos juros compostos os juros ganhos também passam a render juros.
+            </p>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mt-4">
+              Esta calculadora permite-lhe visualizar como pequenas contribuições regulares, combinadas com o poder dos juros compostos, 
+              podem transformar-se numa quantia substancial ao longo dos anos. Compare diferentes cenários e descubra como pequenas alterações 
+              na taxa de juro ou nas contribuições mensais podem ter um impacto significativo no seu futuro financeiro.
+            </p>
+          </div>
+        )}
+      </div>
+      </Reveal>
+
+      {/* Calculator Form with Tabs */}
+      <Reveal>
+      <div className="card-surface p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-blue-500 rounded-xl"><GitCompare className="w-6 h-6 text-white" /></div>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+            Parâmetros de Cálculo
+          </h2>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex space-x-1 bg-gray-100/60 dark:bg-gray-700/60 backdrop-blur-sm p-1 rounded-xl mb-8">
           <button
             onClick={() => setActiveTab('scenario1')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
               activeTab === 'scenario1'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+                ? 'bg-white/80 dark:bg-gray-600/80 text-blue-600 dark:text-blue-400 shadow-sm backdrop-blur-sm'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             Cenário 1
           </button>
           <button
             onClick={() => setActiveTab('scenario2')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
               activeTab === 'scenario2'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600'
+                ? 'bg-white/80 dark:bg-gray-600/80 text-green-600 dark:text-green-400 shadow-sm backdrop-blur-sm'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             Cenário 2
           </button>
+          <button
+            onClick={() => setActiveTab('scenario3')}
+            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+              activeTab === 'scenario3'
+                ? 'bg-white/80 dark:bg-gray-600/80 text-orange-600 dark:text-orange-400 shadow-sm backdrop-blur-sm'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+          >
+            Cenário 3
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'scenario1' && renderCalculatorForm('scenario1', scenario1Data, 'Cenário 1')}
+        {activeTab === 'scenario2' && renderCalculatorForm('scenario2', scenario2Data, 'Cenário 2')}
+        {activeTab === 'scenario3' && renderCalculatorForm('scenario3', scenario3Data, 'Cenário 3')}
+      </div>
+      </Reveal>
+
+      {/* Results */}
+      <Reveal>
+      <div className="card-surface p-8 space-y-8">
+        <div>
+          <button onClick={() => setShowRes1(!showRes1)} className="w-full flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Resultados - Cenário 1</h2>
+            {showRes1 ? <ChevronUp className="w-5 h-5 text-gray-600 dark:text-gray-300"/> : <ChevronDown className="w-5 h-5 text-gray-600 dark:text-gray-300"/>}
+          </button>
+          {showRes1 && renderResults(scenario1Results, '', 'from-blue-50/60 to-blue-100/60 dark:from-blue-900/30 dark:to-blue-800/30 border-blue-200/50 dark:border-blue-700/50')}
+        </div>
+        <div>
+          <button onClick={() => setShowRes2(!showRes2)} className="w-full flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Resultados - Cenário 2</h2>
+            {showRes2 ? <ChevronUp className="w-5 h-5 text-gray-600 dark:text-gray-300"/> : <ChevronDown className="w-5 h-5 text-gray-600 dark:text-gray-300"/>}
+          </button>
+          {showRes2 && renderResults(scenario2Results, '', 'from-green-50/60 to-green-100/60 dark:from-green-900/30 dark:to-green-800/30 border-green-200/50 dark:border-green-700/50')}
+        </div>
+        <div>
+          <button onClick={() => setShowRes3(!showRes3)} className="w-full flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Resultados - Cenário 3</h2>
+            {showRes3 ? <ChevronUp className="w-5 h-5 text-gray-600 dark:text-gray-300"/> : <ChevronDown className="w-5 h-5 text-gray-600 dark:text-gray-300"/>}
+          </button>
+          {showRes3 && renderResults(scenario3Results, '', 'from-orange-50/60 to-orange-100/60 dark:from-orange-900/30 dark:to-orange-800/30 border-orange-200/50 dark:border-orange-700/50')}
         </div>
       </div>
+      </Reveal>
 
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Calculator Form */}
-        <div className="flex-1">
-          {renderCalculatorForm(activeTab, activeTab === 'scenario1' ? scenario1Data : scenario2Data, activeTab === 'scenario1' ? 'Cenário 1' : 'Cenário 2')}
+      {/* Chart */}
+      <Reveal>
+      <div className="card-surface p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-blue-500 rounded-xl"><BarChart3 className="w-6 h-6 text-white" /></div>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+            Comparação de Cenários
+          </h2>
         </div>
 
-        {/* Results and Chart */}
-        <div className="flex-1">
-          <div className="bg-gray-100 dark:bg-gray-800 rounded-xl p-6 mb-6">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Resultados
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  Montante Final:
-                </p>
-                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {formatCurrency(activeTab === 'scenario1' ? scenario1Results.finalAmount : scenario2Results.finalAmount)}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  Total de Contribuições:
-                </p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {formatCurrency(activeTab === 'scenario1' ? scenario1Results.totalContributions : scenario2Results.totalContributions)}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  Total de Juros:
-                </p>
-                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                  {formatCurrency(activeTab === 'scenario1' ? scenario1Results.totalInterest : scenario2Results.totalInterest)}
-                </p>
-              </div>
+        {/* Line Visibility Controls */}
+        <div className="mb-6 p-4 bg-gray-50/60 dark:bg-gray-700/60 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-600/50">
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Controlar Linhas do Gráfico</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {Object.entries(lineLabels).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => toggleLineVisibility(key as keyof LineVisibility)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
+                  lineVisibility[key as keyof LineVisibility]
+                    ? 'bg-white/80 dark:bg-gray-600/80 text-gray-900 dark:text-white shadow-sm'
+                    : 'bg-gray-100/60 dark:bg-gray-700/60 text-gray-500 dark:text-gray-400'
+                }`}
+              >
+                {lineVisibility[key as keyof LineVisibility] ? (
+                  <Eye className="w-3 h-3" />
+                ) : (
+                  <EyeOff className="w-3 h-3" />
+                )}
+                <div 
+                  className="w-3 h-3 rounded-full" 
+                  style={{ backgroundColor: lineColors[key as keyof typeof lineColors] }}
+                ></div>
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="scenario1Gradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="scenario1PrincipalGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#1E40AF" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#1E40AF" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="scenario2Gradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="scenario2PrincipalGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#047857" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#047857" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="scenario3Gradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#EA580C" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#EA580C" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="scenario3PrincipalGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#7C2D12" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#7C2D12" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+              <XAxis 
+                dataKey="year" 
+                className="text-gray-600 dark:text-gray-400"
+                tick={{ fontSize: 12 }}
+              />
+              <YAxis 
+                className="text-gray-600 dark:text-gray-400"
+                tick={{ fontSize: 12 }}
+                tickFormatter={(value) => `€${(value / 1000).toFixed(0)}k`}
+              />
+              <ReTooltip content={customTooltip} />
+              
+              {/* Scenario 1 Areas */}
+              {lineVisibility.principal1 && (
+                <Area
+                  type="monotone"
+                  dataKey="principal1"
+                  stackId="1"
+                  stroke={lineColors.principal1}
+                  fill="url(#scenario1PrincipalGradient)"
+                  strokeWidth={2}
+                />
+              )}
+              {lineVisibility.interest1 && (
+                <Area
+                  type="monotone"
+                  dataKey="interest1"
+                  stackId="1"
+                  stroke={lineColors.interest1}
+                  fill="url(#scenario1Gradient)"
+                  strokeWidth={2}
+                />
+              )}
+              
+              {/* Scenario 2 Areas */}
+              {lineVisibility.principal2 && (
+                <Area
+                  type="monotone"
+                  dataKey="principal2"
+                  stackId="2"
+                  stroke={lineColors.principal2}
+                  fill="url(#scenario2PrincipalGradient)"
+                  strokeWidth={2}
+                />
+              )}
+              {lineVisibility.interest2 && (
+                <Area
+                  type="monotone"
+                  dataKey="interest2"
+                  stackId="2"
+                  stroke={lineColors.interest2}
+                  fill="url(#scenario2Gradient)"
+                  strokeWidth={2}
+                />
+              )}
+
+              {/* Scenario 3 Areas */}
+              {lineVisibility.principal3 && (
+                <Area
+                  type="monotone"
+                  dataKey="principal3"
+                  stackId="3"
+                  stroke={lineColors.principal3}
+                  fill="url(#scenario3PrincipalGradient)"
+                  strokeWidth={2}
+                />
+              )}
+              {lineVisibility.interest3 && (
+                <Area
+                  type="monotone"
+                  dataKey="interest3"
+                  stackId="3"
+                  stroke={lineColors.interest3}
+                  fill="url(#scenario3Gradient)"
+                  strokeWidth={2}
+                />
+              )}
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="flex items-center justify-center gap-8 mt-6 text-sm flex-wrap">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: lineColors.principal1 }}></div>
+              <span className="text-gray-600 dark:text-gray-400">Cenário 1 - Contribuições</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: lineColors.interest1 }}></div>
+              <span className="text-gray-600 dark:text-gray-400">Cenário 1 - Juros</span>
             </div>
           </div>
-
-          <div className="bg-gray-100 dark:bg-gray-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Gráfico de Evolução
-            </h3>
-            <div className="h-[300px] w-full">
-              <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="year" />
-                <YAxis />
-                <ReTooltip content={customTooltip} />
-                <Area
-                  type="monotone"
-                  dataKey={activeTab === 'scenario1' ? 'amount1' : 'amount2'}
-                  stroke={activeTab === 'scenario1' ? '#4f46e5' : '#22c55e'}
-                  fill={activeTab === 'scenario1' ? '#e0e7ff' : '#d1fae5'}
-                  name={activeTab === 'scenario1' ? 'Cenário 1' : 'Cenário 2'}
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={false}
-                  stackId="1"
-                  isAnimationActive={false}
-                />
-                <Area
-                  type="monotone"
-                  dataKey={activeTab === 'scenario1' ? 'principal1' : 'principal2'}
-                  stroke={activeTab === 'scenario1' ? '#4f46e5' : '#22c55e'}
-                  fill={activeTab === 'scenario1' ? '#e0e7ff' : '#d1fae5'}
-                  name={activeTab === 'scenario1' ? 'Cenário 1' : 'Cenário 2'}
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={false}
-                  stackId="1"
-                  isAnimationActive={false}
-                />
-                <Area
-                  type="monotone"
-                  dataKey={activeTab === 'scenario1' ? 'interest1' : 'interest2'}
-                  stroke={activeTab === 'scenario1' ? '#4f46e5' : '#22c55e'}
-                  fill={activeTab === 'scenario1' ? '#e0e7ff' : '#d1fae5'}
-                  name={activeTab === 'scenario1' ? 'Cenário 1' : 'Cenário 2'}
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={false}
-                  stackId="1"
-                  isAnimationActive={false}
-                />
-              </AreaChart>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: lineColors.principal2 }}></div>
+              <span className="text-gray-600 dark:text-gray-400">Cenário 2 - Contribuições</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: lineColors.interest2 }}></div>
+              <span className="text-gray-600 dark:text-gray-400">Cenário 2 - Juros</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: lineColors.principal3 }}></div>
+              <span className="text-gray-600 dark:text-gray-400">Cenário 3 - Contribuições</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: lineColors.interest3 }}></div>
+              <span className="text-gray-600 dark:text-gray-400">Cenário 3 - Juros</span>
             </div>
           </div>
         </div>
       </div>
+      </Reveal>
+
+      <Reveal>
+      <div className="card-surface p-8">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-yellow-400 rounded-xl"><TrendingUp className="w-6 h-6 text-black" /></div>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Onde foi historicamente possível ~10%/ano?</h2>
+        </div>
+        <ul className="space-y-3 text-gray-700 dark:text-gray-300 list-disc pl-6">
+          <li><span className="font-medium">Índices de ações amplos</span> (ex.: S&P 500) ao longo de várias décadas apresentaram ~10%/ano nominal.</li>
+          <li><span className="font-medium">Carteiras globais diversificadas</span> (ex.: MSCI World) com horizonte de longo prazo.</li>
+          <li><span className="font-medium">REITs/Imobiliário cotado</span> em períodos extensos, dependendo do ciclo económico.</li>
+        </ul>
+        <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">Aviso: Rendibilidades passadas não garantem resultados futuros. Considere custos, impostos e risco.</p>
+        <div className="mt-8 flex justify-center">
+          {/* Buy Me a Coffee button injected here via script */}
+          <div id="bmc-container"></div>
+          <BuyMeACoffee containerId="bmc-container" />
+        </div>
+      </div>
+      </Reveal>
     </div>
   );
 };
