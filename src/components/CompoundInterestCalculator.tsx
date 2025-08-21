@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer } from 'recharts';
 import { PiggyBank, TrendingUp, Calculator, BarChart3, BookOpen, GitCompare, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
+import Icon3D from './ui/Icon3D';
+import Tooltip from './ui/Tooltip';
+import { useInView } from './ui/useInView';
 
 interface CalculatorData {
   principal: number;
