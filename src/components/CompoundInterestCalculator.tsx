@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer } from 'recharts';
 import { PiggyBank, TrendingUp, Calculator, BarChart3, BookOpen, GitCompare, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
-import Icon3D from './ui/Icon3D';
+// 2D icons: no Icon3D wrapper
 import Tooltip from './ui/Tooltip';
 import Reveal from './ui/Reveal';
+import BuyMeACoffee from './BuyMeACoffee';
 
 interface CalculatorData {
   principal: number;
@@ -292,10 +293,10 @@ const CompoundInterestCalculator: React.FC = () => {
   const renderCalculatorForm = (scenario: 'scenario1' | 'scenario2' | 'scenario3', data: CalculatorData, title: string) => (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Icon3D color="blue">
-          <Calculator className="w-6 h-6 text-blue-700 dark:text-blue-200" />
-        </Icon3D>
-        <h3 className="text-xl font-semibold text-gray-950 dark:text-white">
+        <div className="p-2 bg-blue-500 rounded-xl">
+          <Calculator className="w-6 h-6 text-white" />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
           {title}
         </h3>
       </div>
@@ -495,7 +496,7 @@ const CompoundInterestCalculator: React.FC = () => {
           className="flex items-center justify-between w-full text-left group"
         >
           <div className="flex items-center gap-3">
-            <Icon3D color="blue"><BookOpen className="w-6 h-6 text-blue-700 dark:text-blue-200" /></Icon3D>
+            <div className="p-2 bg-blue-500 rounded-xl"><BookOpen className="w-6 h-6 text-white" /></div>
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
               O que são Juros Compostos?
             </h2>
@@ -529,7 +530,7 @@ const CompoundInterestCalculator: React.FC = () => {
       <Reveal>
       <div className="card-surface p-8">
         <div className="flex items-center gap-3 mb-6">
-          <Icon3D color="blue"><GitCompare className="w-6 h-6 text-blue-700 dark:text-blue-200" /></Icon3D>
+          <div className="p-2 bg-blue-500 rounded-xl"><GitCompare className="w-6 h-6 text-white" /></div>
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
             Parâmetros de Cálculo
           </h2>
@@ -607,7 +608,7 @@ const CompoundInterestCalculator: React.FC = () => {
       <Reveal>
       <div className="card-surface p-8">
         <div className="flex items-center gap-3 mb-6">
-          <Icon3D color="blue"><BarChart3 className="w-6 h-6 text-blue-700 dark:text-blue-200" /></Icon3D>
+          <div className="p-2 bg-blue-500 rounded-xl"><BarChart3 className="w-6 h-6 text-white" /></div>
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
             Comparação de Cenários
           </h2>
@@ -791,7 +792,7 @@ const CompoundInterestCalculator: React.FC = () => {
       <Reveal>
       <div className="card-surface p-8">
         <div className="flex items-center gap-3 mb-4">
-          <Icon3D color="yellow"><TrendingUp className="w-6 h-6 text-yellow-700 dark:text-yellow-200" /></Icon3D>
+          <div className="p-2 bg-yellow-400 rounded-xl"><TrendingUp className="w-6 h-6 text-black" /></div>
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Onde foi historicamente possível ~10%/ano?</h2>
         </div>
         <ul className="space-y-3 text-gray-700 dark:text-gray-300 list-disc pl-6">
@@ -800,6 +801,11 @@ const CompoundInterestCalculator: React.FC = () => {
           <li><span className="font-medium">REITs/Imobiliário cotado</span> em períodos extensos, dependendo do ciclo económico.</li>
         </ul>
         <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">Aviso: Rendibilidades passadas não garantem resultados futuros. Considere custos, impostos e risco.</p>
+        <div className="mt-8 flex justify-center">
+          {/* Buy Me a Coffee button injected here via script */}
+          <div id="bmc-container"></div>
+          <BuyMeACoffee containerId="bmc-container" />
+        </div>
       </div>
       </Reveal>
     </div>

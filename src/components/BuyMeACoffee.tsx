@@ -1,12 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 
-const BuyMeACoffee: React.FC = () => {
+interface Props {
+  containerId?: string;
+}
+
+const BuyMeACoffee: React.FC<Props> = ({ containerId }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const target = containerId ? document.getElementById(containerId) : containerRef.current;
+    if (!target) return;
     // Prevent duplicates on re-mounts
-    containerRef.current.innerHTML = '';
+    target.innerHTML = '';
 
     const script = document.createElement('script');
     script.src = 'https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js';
@@ -22,13 +27,11 @@ const BuyMeACoffee: React.FC = () => {
     script.setAttribute('data-font-color', '#000000');
     script.setAttribute('data-coffee-color', '#ffffff');
 
-    containerRef.current.appendChild(script);
+    target.appendChild(script);
   }, []);
 
   return (
-    <div className="flex justify-center">
-      <div ref={containerRef} />
-    </div>
+    <div className="flex justify-center">{!containerId && <div ref={containerRef} />}</div>
   );
 };
 

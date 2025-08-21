@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, Moon, Sun, TrendingUp } from 'lucide-react';
-import Icon3D from './components/ui/Icon3D';
-import BuyMeACoffee from './components/BuyMeACoffee';
 import CompoundInterestCalculator from './components/CompoundInterestCalculator';
 
 function App() {
@@ -41,7 +39,9 @@ function App() {
       <header className="bg-white/80 dark:bg-gray-800/70 backdrop-blur-xl border-b border-gray-200/70 dark:border-gray-700/60 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Icon3D color="blue"><Calculator className="w-6 h-6 text-blue-700 dark:text-blue-200" /></Icon3D>
+            <div className="p-2 bg-blue-500 rounded-xl">
+              <Calculator className="w-6 h-6 text-white" />
+            </div>
             <div>
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Calculadora de Juros Compostos
@@ -68,9 +68,6 @@ function App() {
 
       <main className="max-w-4xl mx-auto px-6 py-8">
         <CompoundInterestCalculator />
-        <div className="mt-12">
-          <BuyMeACoffee />
-        </div>
       </main>
 
       <footer className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 mt-16">
