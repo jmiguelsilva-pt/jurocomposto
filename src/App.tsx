@@ -6,12 +6,18 @@ function App() {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    // Check for saved theme preference, default to light mode
+    // Check for saved theme preference or default to light mode
     const savedTheme = localStorage.getItem('theme');
     
+    // Only apply dark mode if explicitly saved as dark
     if (savedTheme === 'dark') {
       setIsDark(true);
       document.documentElement.classList.add('dark');
+    } else {
+      // Ensure light mode is default regardless of system preference
+      setIsDark(false);
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
   }, []);
 
