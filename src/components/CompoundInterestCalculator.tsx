@@ -628,7 +628,7 @@ const CompoundInterestCalculator: React.FC = () => {
                 tick={{ fontSize: 12 }}
                 tickFormatter={(value) => `€${(value / 1000).toFixed(0)}k`}
               />
-              <Tooltip content={customTooltip} />
+              <ReTooltip content={customTooltip} />
               
               {/* Scenario 1 Areas */}
               {lineVisibility.principal1 && (
