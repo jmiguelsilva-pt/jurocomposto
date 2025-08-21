@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, Moon, Sun, TrendingUp } from 'lucide-react';
 import Icon3D from './components/ui/Icon3D';
+import BuyMeACoffee from './components/BuyMeACoffee';
 import CompoundInterestCalculator from './components/CompoundInterestCalculator';
 
 function App() {
@@ -67,8 +68,8 @@ function App() {
 
       <main className="max-w-4xl mx-auto px-6 py-8">
         <CompoundInterestCalculator />
-        <div className="mt-12 flex justify-center">
-          <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="jmss" data-color="#FFDD00" data-emoji="" data-font="Poppins" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
+        <div className="mt-12">
+          <BuyMeACoffee />
         </div>
       </main>
 
