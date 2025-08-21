@@ -444,8 +444,6 @@ const CompoundInterestCalculator: React.FC = () => {
     interest1: '#3B82F6',  // Blue 500
     principal2: '#047857', // Emerald 800
     interest2: '#10B981',  // Emerald 500
-    principal3: '#7C2D12', // Orange 800
-    interest3: '#EA580C',  // Orange 500
   };
 
   const lineLabels = {
@@ -453,8 +451,6 @@ const CompoundInterestCalculator: React.FC = () => {
     interest1: 'Cenário 1 - Juros',
     principal2: 'Cenário 2 - Contribuições',
     interest2: 'Cenário 2 - Juros',
-    principal3: 'Cenário 3 - Contribuições',
-    interest3: 'Cenário 3 - Juros',
   };
 
   return (
