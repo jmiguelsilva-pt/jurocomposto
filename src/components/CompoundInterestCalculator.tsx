@@ -3,7 +3,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, Res
 import { PiggyBank, TrendingUp, Calculator, BarChart3, BookOpen, GitCompare, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
 import Icon3D from './ui/Icon3D';
 import Tooltip from './ui/Tooltip';
-import { useInView } from './ui/useInView';
+import Reveal from './ui/Reveal';
 
 interface CalculatorData {
   principal: number;
@@ -97,6 +97,10 @@ const CompoundInterestCalculator: React.FC = () => {
     principal3: true,
     interest3: true,
   });
+
+  const [showRes1, setShowRes1] = useState(true);
+  const [showRes2, setShowRes2] = useState(true);
+  const [showRes3, setShowRes3] = useState(true);
 
   const calculateScenario = (data: CalculatorData) => {
     const { principal, rate, time, frequency, monthlyContribution } = data;
@@ -288,8 +292,10 @@ const CompoundInterestCalculator: React.FC = () => {
   const renderCalculatorForm = (scenario: 'scenario1' | 'scenario2' | 'scenario3', data: CalculatorData, title: string) => (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Calculator className="w-6 h-6 text-blue-500" />
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+        <Icon3D color="blue">
+          <Calculator className="w-6 h-6 text-blue-700 dark:text-blue-200" />
+        </Icon3D>
+        <h3 className="text-xl font-semibold text-gray-950 dark:text-white">
           {title}
         </h3>
       </div>
@@ -297,8 +303,13 @@ const CompoundInterestCalculator: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Principal Amount */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Capital Inicial
+          <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
+            <div className="inline-flex items-center gap-2">
+              <span>Capital Inicial</span>
+              <Tooltip content="Montante inicial que investe. Pode ser 0€.">
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-800 text-[10px]">i</span>
+              </Tooltip>
+            </div>
           </label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
@@ -308,7 +319,7 @@ const CompoundInterestCalculator: React.FC = () => {
               type="number"
               value={data.principal}
               onChange={(e) => handleInputChange(scenario, 'principal', Number(e.target.value))}
-              className="w-full pl-8 pr-4 py-3 bg-gray-50/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white transition-all duration-200"
+              className="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-black/0 text-gray-900 dark:text-white transition-all duration-200 shadow-sm"
               placeholder="10.000"
             />
           </div>
@@ -316,8 +327,13 @@ const CompoundInterestCalculator: React.FC = () => {
 
         {/* Interest Rate */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Taxa de Juro Anual
+          <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
+            <div className="inline-flex items-center gap-2">
+              <span>Taxa de Juro Anual</span>
+              <Tooltip content="Taxa média anual esperada (ex.: 7 para 7%).">
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-800 text-[10px]">i</span>
+              </Tooltip>
+            </div>
           </label>
           <div className="relative">
             <input
@@ -325,10 +341,10 @@ const CompoundInterestCalculator: React.FC = () => {
               step="0.1"
               value={data.rate}
               onChange={(e) => handleInputChange(scenario, 'rate', Number(e.target.value))}
-              className="w-full pr-8 pl-4 py-3 bg-gray-50/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white transition-all duration-200"
+              className="w-full pr-8 pl-4 py-3 bg-white dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-black/0 text-gray-900 dark:text-white transition-all duration-200 shadow-sm"
               placeholder="5.0"
             />
-            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
+            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-700 dark:text-gray-400">
               %
             </span>
           </div>
@@ -336,22 +352,32 @@ const CompoundInterestCalculator: React.FC = () => {
 
         {/* Time Period */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Período (Anos)
+          <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
+            <div className="inline-flex items-center gap-2">
+              <span>Período (Anos)</span>
+              <Tooltip content="Número de anos do investimento.">
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-800 text-[10px]">i</span>
+              </Tooltip>
+            </div>
           </label>
           <input
             type="number"
             value={data.time}
             onChange={(e) => handleInputChange(scenario, 'time', Number(e.target.value))}
-            className="w-full px-4 py-3 bg-gray-50/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white transition-all duration-200"
+            className="w-full px-4 py-3 bg-white dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-black/0 text-gray-900 dark:text-white transition-all duration-200 shadow-sm"
             placeholder="10"
           />
         </div>
 
         {/* Monthly Contribution */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Contribuição Mensal
+          <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
+            <div className="inline-flex items-center gap-2">
+              <span>Contribuição Mensal</span>
+              <Tooltip content="Valor que adiciona todos os meses.">
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-800 text-[10px]">i</span>
+              </Tooltip>
+            </div>
           </label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
@@ -361,7 +387,7 @@ const CompoundInterestCalculator: React.FC = () => {
               type="number"
               value={data.monthlyContribution}
               onChange={(e) => handleInputChange(scenario, 'monthlyContribution', Number(e.target.value))}
-              className="w-full pl-8 pr-4 py-3 bg-gray-50/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white transition-all duration-200"
+              className="w-full pl-8 pr-4 py-3 bg-white dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-black/0 text-gray-900 dark:text-white transition-all duration-200 shadow-sm"
               placeholder="500"
             />
           </div>
@@ -369,13 +395,18 @@ const CompoundInterestCalculator: React.FC = () => {
 
         {/* Compound Frequency */}
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Frequência de Capitalização
+          <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
+            <div className="inline-flex items-center gap-2">
+              <span>Frequência de Capitalização</span>
+              <Tooltip content="Frequência com que os juros são aplicados.">
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-800 text-[10px]">i</span>
+              </Tooltip>
+            </div>
           </label>
           <select
             value={data.frequency}
             onChange={(e) => handleInputChange(scenario, 'frequency', Number(e.target.value))}
-            className="w-full px-4 py-3 bg-gray-50/60 dark:bg-gray-700/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white transition-all duration-200"
+            className="w-full px-4 py-3 bg-white dark:bg-gray-700/70 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-black/0 text-gray-900 dark:text-white transition-all duration-200 shadow-sm"
           >
             <option value={1}>Anualmente</option>
             <option value={4}>Trimestralmente</option>
@@ -457,13 +488,14 @@ const CompoundInterestCalculator: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Introduction */}
-      <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-2xl p-8 shadow-sm border border-gray-200/50 dark:border-gray-700/50">
+      <Reveal>
+      <div className="card-surface p-8">
         <button
           onClick={() => setIsIntroCollapsed(!isIntroCollapsed)}
           className="flex items-center justify-between w-full text-left group"
         >
           <div className="flex items-center gap-3">
-            <BookOpen className="w-6 h-6 text-blue-500" />
+            <Icon3D color="blue"><BookOpen className="w-6 h-6 text-blue-700 dark:text-blue-200" /></Icon3D>
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
               O que são Juros Compostos?
             </h2>
@@ -491,11 +523,13 @@ const CompoundInterestCalculator: React.FC = () => {
           </div>
         )}
       </div>
+      </Reveal>
 
       {/* Calculator Form with Tabs */}
-      <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-2xl p-8 shadow-sm border border-gray-200/50 dark:border-gray-700/50">
+      <Reveal>
+      <div className="card-surface p-8">
         <div className="flex items-center gap-3 mb-6">
-          <GitCompare className="w-6 h-6 text-blue-500" />
+          <Icon3D color="blue"><GitCompare className="w-6 h-6 text-blue-700 dark:text-blue-200" /></Icon3D>
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
             Parâmetros de Cálculo
           </h2>
@@ -540,20 +574,40 @@ const CompoundInterestCalculator: React.FC = () => {
         {activeTab === 'scenario2' && renderCalculatorForm('scenario2', scenario2Data, 'Cenário 2')}
         {activeTab === 'scenario3' && renderCalculatorForm('scenario3', scenario3Data, 'Cenário 3')}
       </div>
+      </Reveal>
 
       {/* Results */}
-      <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-2xl p-8 shadow-sm border border-gray-200/50 dark:border-gray-700/50">
-        <div className="space-y-8">
-          {renderResults(scenario1Results, 'Resultados - Cenário 1', 'from-blue-50/60 to-blue-100/60 dark:from-blue-900/30 dark:to-blue-800/30 border-blue-200/50 dark:border-blue-700/50')}
-          {renderResults(scenario2Results, 'Resultados - Cenário 2', 'from-green-50/60 to-green-100/60 dark:from-green-900/30 dark:to-green-800/30 border-green-200/50 dark:border-green-700/50')}
-          {renderResults(scenario3Results, 'Resultados - Cenário 3', 'from-orange-50/60 to-orange-100/60 dark:from-orange-900/30 dark:to-orange-800/30 border-orange-200/50 dark:border-orange-700/50')}
+      <Reveal>
+      <div className="card-surface p-8 space-y-8">
+        <div>
+          <button onClick={() => setShowRes1(!showRes1)} className="w-full flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Resultados - Cenário 1</h2>
+            {showRes1 ? <ChevronUp className="w-5 h-5 text-gray-600 dark:text-gray-300"/> : <ChevronDown className="w-5 h-5 text-gray-600 dark:text-gray-300"/>}
+          </button>
+          {showRes1 && renderResults(scenario1Results, '', 'from-blue-50/60 to-blue-100/60 dark:from-blue-900/30 dark:to-blue-800/30 border-blue-200/50 dark:border-blue-700/50')}
+        </div>
+        <div>
+          <button onClick={() => setShowRes2(!showRes2)} className="w-full flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Resultados - Cenário 2</h2>
+            {showRes2 ? <ChevronUp className="w-5 h-5 text-gray-600 dark:text-gray-300"/> : <ChevronDown className="w-5 h-5 text-gray-600 dark:text-gray-300"/>}
+          </button>
+          {showRes2 && renderResults(scenario2Results, '', 'from-green-50/60 to-green-100/60 dark:from-green-900/30 dark:to-green-800/30 border-green-200/50 dark:border-green-700/50')}
+        </div>
+        <div>
+          <button onClick={() => setShowRes3(!showRes3)} className="w-full flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Resultados - Cenário 3</h2>
+            {showRes3 ? <ChevronUp className="w-5 h-5 text-gray-600 dark:text-gray-300"/> : <ChevronDown className="w-5 h-5 text-gray-600 dark:text-gray-300"/>}
+          </button>
+          {showRes3 && renderResults(scenario3Results, '', 'from-orange-50/60 to-orange-100/60 dark:from-orange-900/30 dark:to-orange-800/30 border-orange-200/50 dark:border-orange-700/50')}
         </div>
       </div>
+      </Reveal>
 
       {/* Chart */}
-      <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-2xl p-8 shadow-sm border border-gray-200/50 dark:border-gray-700/50">
+      <Reveal>
+      <div className="card-surface p-8">
         <div className="flex items-center gap-3 mb-6">
-          <BarChart3 className="w-6 h-6 text-blue-500" />
+          <Icon3D color="blue"><BarChart3 className="w-6 h-6 text-blue-700 dark:text-blue-200" /></Icon3D>
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
             Comparação de Cenários
           </h2>
@@ -732,6 +786,22 @@ const CompoundInterestCalculator: React.FC = () => {
           </div>
         </div>
       </div>
+      </Reveal>
+
+      <Reveal>
+      <div className="card-surface p-8">
+        <div className="flex items-center gap-3 mb-4">
+          <Icon3D color="yellow"><TrendingUp className="w-6 h-6 text-yellow-700 dark:text-yellow-200" /></Icon3D>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Onde foi historicamente possível ~10%/ano?</h2>
+        </div>
+        <ul className="space-y-3 text-gray-700 dark:text-gray-300 list-disc pl-6">
+          <li><span className="font-medium">Índices de ações amplos</span> (ex.: S&P 500) ao longo de várias décadas apresentaram ~10%/ano nominal.</li>
+          <li><span className="font-medium">Carteiras globais diversificadas</span> (ex.: MSCI World) com horizonte de longo prazo.</li>
+          <li><span className="font-medium">REITs/Imobiliário cotado</span> em períodos extensos, dependendo do ciclo económico.</li>
+        </ul>
+        <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">Aviso: Rendibilidades passadas não garantem resultados futuros. Considere custos, impostos e risco.</p>
+      </div>
+      </Reveal>
     </div>
   );
 };

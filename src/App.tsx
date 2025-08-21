@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, Moon, Sun, TrendingUp } from 'lucide-react';
+import Icon3D from './components/ui/Icon3D';
 import CompoundInterestCalculator from './components/CompoundInterestCalculator';
 
 function App() {
@@ -36,12 +37,10 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      <header className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 sticky top-0 z-10">
+      <header className="bg-white/80 dark:bg-gray-800/70 backdrop-blur-xl border-b border-gray-200/70 dark:border-gray-700/60 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-500 rounded-xl">
-              <Calculator className="w-6 h-6 text-white" />
-            </div>
+            <Icon3D color="blue"><Calculator className="w-6 h-6 text-blue-700 dark:text-blue-200" /></Icon3D>
             <div>
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Calculadora de Juros Compostos
@@ -68,6 +67,9 @@ function App() {
 
       <main className="max-w-4xl mx-auto px-6 py-8">
         <CompoundInterestCalculator />
+        <div className="mt-12 flex justify-center">
+          <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="jmss" data-color="#FFDD00" data-emoji="" data-font="Poppins" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
+        </div>
       </main>
 
       <footer className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 mt-16">
