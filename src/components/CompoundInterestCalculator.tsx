@@ -106,31 +106,30 @@ const CompoundInterestCalculator: React.FC = () => {
   const calculateScenario = (data: CalculatorData) => {
     const { principal, rate, time, frequency, monthlyContribution } = data;
     const r = rate / 100;
-    
+
+    // Taxa efetiva mensal resultante da capitalização 'frequency' vezes/ano
+    // ex.: mensal (12): (1 + r/12)^(12/12) - 1 => r/12; anual (1): (1 + r)^ (1/12) - 1; diário (365): (1 + r/365)^(365/12) - 1
+    const monthlyEffectiveRate = Math.pow(1 + r / frequency, frequency / 12) - 1;
+
     let amount = principal;
     let totalContributions = principal;
-    const yearlyData = [];
-    
+    const yearlyData: Array<{ year: number; amount: number; principal: number; interest: number }> = [];
+
     for (let year = 0; year <= time; year++) {
       if (year === 0) {
-        yearlyData.push({
-          year,
-          amount: principal,
-          principal: totalContributions,
-          interest: 0
-        });
+        yearlyData.push({ year, amount: principal, principal: totalContributions, interest: 0 });
       } else {
-        // Calculate compound interest with monthly contributions
+        // Simulação mensal: 12 passos por ano com taxa efetiva mensal
         for (let month = 1; month <= 12; month++) {
-          amount = amount * (1 + r / frequency) + monthlyContribution;
+          amount = amount * (1 + monthlyEffectiveRate) + monthlyContribution;
         }
         totalContributions += monthlyContribution * 12;
-        
+
         yearlyData.push({
           year,
           amount: Math.round(amount),
           principal: totalContributions,
-          interest: Math.round(amount - totalContributions)
+          interest: Math.round(amount - totalContributions),
         });
       }
     }
@@ -139,12 +138,8 @@ const CompoundInterestCalculator: React.FC = () => {
     const totalInterest = Math.round(amount - totalContributions);
 
     return {
-      results: {
-        finalAmount,
-        totalInterest,
-        totalContributions
-      },
-      yearlyData
+      results: { finalAmount, totalInterest, totalContributions },
+      yearlyData,
     };
   };
 
